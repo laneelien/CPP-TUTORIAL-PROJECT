@@ -1,0 +1,2 @@
+Hello, I am a student learning C++!
+42
