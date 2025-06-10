@@ -4,17 +4,32 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: self-hosted  # Make sure your self-hosted runner is correctly registered
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Install g++
-      run: sudo apt update && sudo apt install g++ -y
+      - name: Install g++
+        shell: bash
+        run: |
+          if ! command -v g++ > /dev/null; then
+            echo "Installing g++..."
+            sudo apt update && sudo apt install g++ -y
+          else
+            echo "g++ already installed"
+          fi
 
-    - name: Build
-      run: g++ -std=c++11 main.cpp src/utils.cpp -o program
+      - name: Compile C++ code
+        run: g++ -std=c++11 main.cpp src/utils.cpp -o program
 
-    - name: Run
-      run: ./program < input.txt || true
+      - name: Run the program
+        run: |
+          if [ -f input.txt ]; then
+            ./program < input.txt
+          else
+            echo "No input.txt found. Skipping input redirection."
+            ./program
+          fi
+
 
