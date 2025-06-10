@@ -1,5 +1,5 @@
 
-name: Build and Run C++ Code
+name: Build and Run
 
 on: [push, pull_request]
 
