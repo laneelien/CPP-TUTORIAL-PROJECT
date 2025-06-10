@@ -4,32 +4,32 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: self-hosted  # Make sure your self-hosted runner is correctly registered
+    runs-on: self-hosted  # Ensure this is a Windows self-hosted runner
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install g++
-        shell: bash
+      - name: Check for g++
+        shell: powershell
         run: |
-          if ! command -v g++ > /dev/null; then
-            echo "Installing g++..."
-            sudo apt update && sudo apt install g++ -y
-          else
-            echo "g++ already installed"
-          fi
+          if (-not (Get-Command g++ -ErrorAction SilentlyContinue)) {
+            Write-Output "g++ not found. Please install MinGW or another C++ compiler manually on this Windows runner."
+            exit 1
+          } else {
+            Write-Output "g++ is installed."
+          }
 
       - name: Compile C++ code
-        run: g++ -std=c++11 main.cpp src/utils.cpp -o program
+        shell: cmd
+        run: g++ -std=c++11 main.cpp src\\utils.cpp -o program.exe
 
       - name: Run the program
+        shell: cmd
         run: |
-          if [ -f input.txt ]; then
-            ./program < input.txt
-          else
-            echo "No input.txt found. Skipping input redirection."
-            ./program
-          fi
-
-
+          IF EXIST input.txt (
+            program.exe < input.txt
+          ) ELSE (
+            ECHO input.txt not found. Running without input redirection.
+            program.exe
+          )
