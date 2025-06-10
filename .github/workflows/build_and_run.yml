@@ -1,0 +1,42 @@
+
+name: Build and Run C++ Code
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest  # Use GitHub-hosted Windows runner
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Check for g++
+        shell: cmd
+        run: |
+          where g++ >nul 2>nul
+          if errorlevel 1 (
+            echo g++ not found. Please install MinGW or another C++ compiler manually on this Windows runner.
+            exit /b 1
+          ) else (
+            echo g++ is installed.
+          )
+
+      - name: Compile C++ code
+        shell: cmd
+        run: |
+          g++ -std=c++11 main.cpp src\utils.cpp -o program.exe
+          if errorlevel 1 (
+            echo Compilation failed.
+            exit /b 1
+          )
+
+      - name: Run the program
+        shell: cmd
+        run: |
+          if exist input.txt (
+            program.exe < input.txt
+          ) else (
+            echo input.txt not found. Running without input redirection.
+            program.exe
+          )
