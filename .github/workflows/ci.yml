@@ -11,30 +11,31 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Check for g++
-        shell: powershell
+        shell: cmd
         run: |
-          if (-not (Get-Command g++ -ErrorAction SilentlyContinue)) {
-            Write-Error "g++ not found. Please install MinGW or another C++ compiler manually on this Windows runner."
-            exit 1
-          } else {
-            Write-Output "g++ is installed."
-          }
+          where g++ >nul 2>nul
+          if errorlevel 1 (
+            echo g++ not found. Please install MinGW or another C++ compiler manually on this Windows runner.
+            exit /b 1
+          ) else (
+            echo g++ is installed.
+          )
 
       - name: Compile C++ code
-        shell: powershell
+        shell: cmd
         run: |
           g++ -std=c++11 main.cpp src\\utils.cpp -o program.exe
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "Compilation failed."
-            exit 1
-          }
+          if errorlevel 1 (
+            echo Compilation failed.
+            exit /b 1
+          )
 
       - name: Run the program
-        shell: powershell
+        shell: cmd
         run: |
-          if (Test-Path "input.txt") {
-            Get-Content input.txt | .\program.exe
-          } else {
-            Write-Output "input.txt not found. Running without input redirection."
-            .\program.exe
-          }
+          if exist input.txt (
+            program.exe < input.txt
+          ) else (
+            echo input.txt not found. Running without input redirection.
+            program.exe
+          )
