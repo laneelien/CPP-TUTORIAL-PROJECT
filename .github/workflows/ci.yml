@@ -14,22 +14,27 @@ jobs:
         shell: powershell
         run: |
           if (-not (Get-Command g++ -ErrorAction SilentlyContinue)) {
-            Write-Output "g++ not found. Please install MinGW or another C++ compiler manually on this Windows runner."
+            Write-Error "g++ not found. Please install MinGW or another C++ compiler manually on this Windows runner."
             exit 1
           } else {
             Write-Output "g++ is installed."
           }
 
       - name: Compile C++ code
-        shell: cmd
-        run: g++ -std=c++11 main.cpp src\\utils.cpp -o program.exe
+        shell: powershell
+        run: |
+          g++ -std=c++11 main.cpp src\\utils.cpp -o program.exe
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Compilation failed."
+            exit 1
+          }
 
       - name: Run the program
-        shell: cmd
+        shell: powershell
         run: |
-          IF EXIST input.txt (
-            program.exe < input.txt
-          ) ELSE (
-            ECHO input.txt not found. Running without input redirection.
-            program.exe
-          )
+          if (Test-Path "input.txt") {
+            Get-Content input.txt | .\program.exe
+          } else {
+            Write-Output "input.txt not found. Running without input redirection."
+            .\program.exe
+          }
